@@ -1,0 +1,47 @@
+\section{Introduction}
+%motivation
+
+%With the ever growing digitization of all the industry domains, the software systems are getting more and more complex ant their new usages permanently expose them to new vulnerabilities. 
+There is no single week without an announcement indicating that a system was attacked, and this trend is not likely to stop in the short term. The relative novelty of the software security field along with the lack of real methodology defining how to design secure systems does not help.
+
+To cope with these threats, researchers have identified generic solutions to mitigate system vulnerabilities: authentication, permission handling, resource access, etc. These solutions, known as security design patterns, are meant to provide architectural and functional guidelines to address security in early design stages. Security design patterns, studied in many research papers  \cite{fernandez2013, yoshioka2008, washizaki2018taxonomy}, capture security expertise and can be used throughout the entire system development process (design phase, implementation, test, etc.).
+
+%Nevertheless, cyber-attacks are quite well known: denial of service, worms, trojans, phishing, attacks on lower network layers, spyware, etc. The study of this repeatable and reproducible behaviour has allowed the production of reusable security artifacts that allow to prevent the threats, their consequences and countermeasures before a system is in place, rather than as a reaction to possibly disastrous attacks. These artifacts are intended to capture security expertise in the form of worked solutions to recurring problems, such as security patterns. 
+%Indeed, the security patterns encapsulates a security problem and the related solutions. These security patterns are defined in a prolific literature and used in several phases of the development process \cite{Washizaki,fernandez, livreBureau, manu}. In this context, the security patterns are mainly the founding principles to provide the architectural and design support for secure software systems. 
+
+%In addition, security patterns are used in all phases of the software development process. 
+Software system development is now based on existing components in a goal to reuse, to extend or mainly to compose with new components. Mitigating the security risks of such resulting code is a real challenge \cite{souag2016reusable}. Such challenge can be faced through the extensive use of security patterns. Improvement of legacy code using security design patterns however remains problematic \cite{washizaki2018taxonomy}.
+%In this context, security concern is a real issue taking into account in the resulting software based on an existing code and a new one. 
+%In these cases, applying security patterns on a legacy code, developed in another context, is one of the remaining issues as a research question for an extensive use of the security patterns \cite{yoshioka2008}
+
+Applying security patterns to legacy code raises two issues: (i) improving pattern definitions to focus on security properties (behavior) rather than architectural constraints and (ii) ensuring that the security properties of the considered pattern are preserved when applied on a composition of existing code.
+
+%Applying security patterns on legacy code encounters two main problems: (i) how to ensure or preserve the security properties of the considered pattern (or a composition of) on the legacy code or the resulting one, and (ii) how to improve the behavior definition of security patterns to focus the weaving of security patterns on behavior properties rather than only on the structural part.
+
+To tackle these issues, the contribution of this paper is focused on improving security pattern definitions through behavior formalization. This formalization is based on the design-by-contract approach, presented in Section 2.
+ Section 3 provides a formal definition of contract-based security patterns.
+We show how this approach can be implemented in two different annotation-based languages in Section 4. 
+%We also develop a proof of concept of our approach in these two languages. 
+Section 4.3 presents the results of both experiments and reports the benefits and limitations that we found in our approach when applied to secure legacy code.
+To the best of our knowledge, there is no research specifically focused on the extension of security patterns with the notion of formal contracts in order to create well defined security properties in the form of cyber-security contracts. One of the implementations of our approach shows its capacity to improve the security either of a software component at design time, or of a composition of legacy code, or both.
+
+%Even if there is a great number of works reported in the literature on (i) design and implementation security patterns (refs) and (ii) the use of the design by contract approach to ...(refs), ...(refs) and ...(refs); there has not been, to the best of our knowledge, any research specifically focused on the extension of security patterns  with the notion of formal contracts in order to create well defined security properties in the form of cyber-security contracts.
+
+
+%In this paper we present a general conceptual framework to specify security patterns based on the notion of Design-by-Contract (DbC). The central idea of DbC is a metaphor on how elements of a software system collaborate with each other on the basis of mutual obligations and benefits. The metaphor comes from business life, where a "client" and a "supplier" agree on a "contract" defining the obligations that both parties must satisfy. This software design approach intends to improve the reliability (e.g., correctness and robustness) of the produced software and can also facilitate code reuse, since the contract for each piece of code is fully documented. The contracts for a module can be regarded as a form of software documentation for the behavior of that module.  
+%Thus, the framework presented in this paper relies on the DbC concepts to ... 
+%and then present an overview of the framework components and processes.
+%We implemented our security by design approach in two Java annotation frameworks... To evaluate the effectiveness of our approach, we ...
+
+%contributions
+%This paper’s contributions are:
+%(i) A design by contract generic approach to specify security patterns. This approach enables security engineers to ...;
+%(ii) An implementation of the proposed approach in ...; and
+%(iii) An application of the security approach in X cases with experiments to evaluate the effectiveness of the approach and its capacity to overcome two challenges reported in a recent literature review on the topic.
+
+%Whether in communications, health, insurance, industry, or military, there is no sector that has not been deeply transformed by the rise of digital technologies. More specifically in the world of enterprise and administrations, software and information systems have generated new productivity gains and profits, and facilitated innovation, in terms of radically new services and business models.
+%However, with the ever growing digitization of activities, these systems are getting more and more complex ant their new usages permanently expose them to new vulnerabilities. There is no single week without an announcement indicating that a system was attacked, and this trend is not likely to stop in the short term. This situation is due, in part, to the fact that (i) security is still often considered as an adjustment variable usually addressed in testing phases or even during production phases through risk mitigation or system hardening, (ii) due to the relative novelty of the software security field, there are currently no real methodology clearly defining how to design secure systems, and (iii) nowadays software systems are usually built from large code bases or generic components, and even if security issues are addressed in the development of each component, there is no guarantee that that the system resulting from the reuse of that code or those components guarantees appropriate security properties.
+% Sylvain: Je propose de rajouter un item sur le fait qu'aujourd'hui un système logiciel se construit à partir de grosses bases de code et/ou de composants développés séparément et dans un autre contexte. Même si les problématiques de sécurité sont abordées pour le développement de chaque composant, rien n'indique que l'utilisation (la composition) de ces composants guarantit de bonnes propriétés de sécurité au système. (introduction à la notion de pattern comme un opérateur de composition qui doit respecter (1) une sémantique (2) des propriétés de sécurité (contrat). Ensuite, je dirais qu'en plus ces composants évoluent tous les jours (mises à jour), et que dans ce contexte c'est encore plus difficile.
+%Raul: C'est OK!
+
+%This paper is structured as follows: The second chapter focuses on the project definition and management. The proposed security pattern definition is then described and illustrates with the Authenticator and Authorization patterns. Eventually, two different implementation approaches are described.

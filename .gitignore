@@ -1,0 +1,15 @@
+**/*.aux
+**/*.mtc*
+**/*.out
+.DS_Store
+**/*.bbl
+**/*.blg
+**/*.lof
+**/*.lot
+**/*.log
+**/*.maf
+**/*.synctex.gz
+**/*.toc
+
+
+

@@ -1,0 +1,20 @@
+
+\section{Related work}
+% Positionnement par rapport aux SecurityPatterns
+
+The security by design approach is mainly based on security patterns applied to many phases of the development process. Several publications focus on security patterns, in general or specific domains such as Yoder and al. \cite{yoder1997}, Fernandez-Buglioni \cite{fernandez2013}, and Yoshioka et al. \cite{yoshioka2008}. In most cases, the patterns are defined based on the original approach of the Gang of Four \cite{gamma1995} with textual definitions and usually represented with refined and stereotyped UML diagrams (Class diagrams for the structural part and Sequence diagrams to represent the behavior of the patterns).
+
+Formal definitions of security patterns are also provided by several authors \cite{cheng2019}, \cite{behrens2018}, \cite{daSilva2013}. In most cases, the purpose of these formal definitions is to analyze the behavior of the patterns at design level or enabling automatic analysis operations. Our proposal to formalize security patterns with a design by contract approach aims at ensuring a secure implementation of patterns. Therefore, this work complements the previous efforts to formalize security patterns.
+
+Originally, the design by contract approach was defined to support reliability on object oriented applications \cite{meyer1992applying}. Then, it was also extended to component modeling \cite{beugnard1999} and formal definitions \cite{mouelhi2019}. 
+At code level, the DbC approach is implemented with the JContractor \cite{karaorman2005} framework, which provides run-time contract checking by instrumenting the bytecode of Java classes that define contracts. It however remains limited to the initial scope of Meyer's contracts; i.e., classes and methods. The closest approach to our work is the Aspect Oriented Programming (AOP) approach used by Hallstrom and al. \cite{hallstrom2004} to monitor the pattern contract.
+Each pattern contract is associated with a dedicated pattern and is defined in an \emph{aspect}. This \emph{aspect} is used to monitor, at run-time, the applied pattern. Nevertheless, this approach is exclusively focused on the implementation without a will to provide abstraction related to the contract definition. Thus, our formal definition could be used to target such AOP implementations by providing the missing abstraction. 
+
+To the best of our knowledge, the design by contract approach extended to security patterns, associated with a formal definition of the security properties was never used to improve the security of software system, at source code level.
+
+% A finaliser
+
+%Regarding the implementation the most closer approach is based on aspect programming and Jcontractor framework. 
+%The MOP approach is also closed relative to the capacity to inspect execution at run-time.
+
+
