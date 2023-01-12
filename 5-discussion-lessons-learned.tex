@@ -1,0 +1,22 @@
+\section{Discussion and lessons learned}
+\label{sec:discussion-lessons-learned}
+
+Quelques idées en vrac aussi:
+
+\begin{itemize}
+    \item Bibliothèque de patterns > composition de patterns (pattern=contrat)
+    \item Les patterns exposent des "roles" utilisables pour construire des propriétés (en tant qu'expression)
+    \item Parler de paradigmes multiples pour les propriétés des patterns/contrats
+    \item Sinon problème de charge cognitive pour le développeur
+    \item Problème de performances
+\end{itemize}
+
+L'expérimentation menée valide l'approche proposée d'annotation de code source existant, pour spécifier une exécution composite via du tissage au runtime. Cette approche s'apparente à la programmation par aspect (AOP).
+
+Cette approche requiert cependant une grande expertise en programmation pour les développeurs, et s'avère parfois assez technique. A ce titre, il était intéressant de partir d'un code source réaliste et représentatif de pratiques de programmation usuelles, à savoir ici le framework Spring. Il est important de mentionner qu'il n'est pas question de discuter ici de la politique de sécurité du framework Spring pour laquelle beaucoup de mécanismes adhoc, complexes et efficaces sont mis en oeuvre par la communauté. Il s'agissait uniquement ici de valider le fait qu'il est possible d'annoter du code existant pour réaliser du monitoring @runtime.
+
+Pour valider plus complètement l'approche, il serait utile de s'intéresser à d'autres bases de code source, pour explorer plus exhaustivement des techniques de programmation permettant d'intégrer des points d'extension. 
+
+Cette approche, de par sa nature "programmation orientée aspect", requiert une grande expertise en terme d'analyse fonctionnelle et de maintenance de code source, et implique une assez lourde charge cognitive. Ceci s'explique par la nature intrinsèquement transversale des concepts manipulés. Le développeur doit avoir en tête à la fois le code fonctionnel, et les patrons utilisés (dont la logique métier est implicite et n'est pas accessible directement au niveau du code annoté).
+
+Le cas d'utilisation étudié ici ne porte pas d'exigences fortes en terme de performances, mais il est évident que le monitoring implique un overhead significatif du temps de calcul. Il serait donc pertinent de compléter cette expérimentation par une étude sur les performances. A noter cependant que le framework Pamela permet un ajustement fin et programmatiquement accessible des fonctionnalités de monitoring (cf section \ref{subsec:conf-monitoring}).

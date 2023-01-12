@@ -1,0 +1,41 @@
+\section{Preliminaries and motivations}
+\label{sec:preliminaries}
+
+TODO
+
+Il s'agit ici de mettre en place les différentes briques...
+
+\subsection{Security Design Patterns}
+
+\sg{Cf papier \cite{silva:hal-02958111} (OLD/4-preliminaries.tex)}
+
+\subsection{Design by Contract}
+
+\sg{Cf papier \cite{silva:hal-02958111} (OLD/4-preliminaries.tex)}
+
+Usage ?
+Limitations ?
+
+\subsection{Runtime enforcement mechanisms}
+
+\sg{Des trucs intéressants à voir/reprendre dans \cite{bonfanti2023component} ?}
+
+\subsection{Motivations} 
+
+Ce qu'on essaie de faire ici...
+
+Je pose quelques idées en vrac :
+
+\begin{itemize}
+    \item Travailler avec du legacy code
+    \item Pas seulement safety mais security pour gérer le truc qu'on ne sait pas prévoir
+    \item Dissocier les préoccupations fonctionnelles vs securité : aspect oriented programming (tissage @runtime)
+    \item Faire du monitoring@runtime avec un niveau de monitoring configurable
+    \item Idée d'un "harnais" de sécurité au dessus d'un code fonctionnel
+    \item Idée de sécurisation de la composition de composants (eux-même peut-être déjà sécurisés): un contrat pour sécuriser le composition ?
+\end{itemize}
+
+
+
+
+
