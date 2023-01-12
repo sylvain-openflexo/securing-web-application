@@ -41,15 +41,7 @@ cette expérimentation est le \textit{DAOAuthenticationProvider}. DAO correspond
 
 La mise en oeuvre du patron \textit{Authenticator} dans ce contexte s'appuie sur des techniques d'annotations de code source. Ces techniques requièrent d'identifier les concepts et les points d'extension adéquats, au prix parfois de la mise en place d'héritages et de délégations.
 
-La figure \ref{fig:AuthenticationClassDiagram2} reprend le diagramme de classe du patron \textit{Authenticator} présenté dans la section \ref{subsubsec:authenticator_pattern}. On se réfèrera également à la figure \ref{fig:AuthenticatorPattern} pour la correspondance des concepts entre les concepts métiers fournis par Spring et le patron \textit{Authenticator} utilisé.
-\\
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=0.6 \columnwidth]{figures/AuthenticationClassDiagram.pdf}
-    \caption{Patron \textit{Authenticator}}
-    \label{fig:AuthenticationClassDiagram2}
-\end{figure}
-\\
+La figure \ref{fig:authenticator_class_diagram} reprend le diagramme de classe du patron \textit{Authenticator} présenté dans la section \ref{subsubsec:authenticator_pattern}. On se réfèrera également à la figure \ref{fig:AuthenticatorPattern} pour la correspondance des concepts entre les concepts métiers fournis par Spring et le patron \textit{Authenticator} utilisé.
 
 Ce patron identifie quatre entités distinctes : \textit{Authenticator}, \textit{Subject}, \textit{AuthenticationInformation} et \textit{ProofOfIdentity}, pour lesquelles il s'agit de trouver le concept métier correspondant dans le code source à annoter.
 
