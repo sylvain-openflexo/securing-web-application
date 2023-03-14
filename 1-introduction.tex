@@ -1,8 +1,25 @@
 \section{Introduction}
 \label{sec:introduction}
+Under the interest of introducing efficiency and cost-effectiveness, software technologies are being increasingly integrated in many different environments, including critical ones, i.e. environments where a system failure regarding its missions, business operations, safety and/or security would have severe adverse impacts that range from data loss to even loss of life. The integration of one or several software components makes systems prone to a wider range of security threats. To cope with these threats, research and industry efforts have lead to the identification of a number of generic solutions to mitigate diverse security vulnerabilities. Among them, we may find: authentication, permission handling, resource access, etc. These solutions, which are meant to capture security expertise and provide architectural and functional guidelines to system developers, are known as security design patterns~\cite{fernandez2013, yoshioka2008, washizaki2018taxonomy}.
 
-TODO
+Unfortunately, the operationalization of security patterns, this is, their implementation and enforcement on the system-to-be remains a complex and error prone task. First of all, as reusable as they may be, patterns need to be often adapted to the problem and solution domains and thus, implementations may deviate from the initial pattern description. Secondly, patterns may depend on environment uncertainties that can only be known at run-time, imposing a monitoring requirement for a safe enforcement. Consequently, a number of (often implicit) properties among those that must hold in order for a pattern to be effective may be left unsatisfied (by missing a correct implementation, run-time enforcement or both). Therefore, even when integrating security patterns, systems may remain vulnerable to the threat the aimed to mitigate. In this sense, the need for a mechanism to help with both, the implementation of security patterns and their monitoring at run-time appears as critical. Such a mechanism must provide the means to: 1) describe complex patterns with a focus on guarantied security properties; 2) easily instantiate them on both, new (in development) and existing applications (e.g., to enhance existing but faulty or incomplete patterns). 
+%In this paper, we focus here on an existing and relevant application in the web context, after an evaluation and prototype phase \cite{silva2020contract}. 
+% I add a reference of the previous paper to mark a continuity on our works early in the paper. ??
+% Yes, but I am moving it to the next paragraph, which presents our approach.
 
-\sg{Regarder ce qu'on peut reprendre comme idées du OLD/3-introduction.tex}
+We propose a solution based on an extension a the Design-by-contract (Dbc) paradigm~\cite{meyer1992applying}, a method designed to formalize the interaction between components in terms of expectations and guarantees. In this sense, our solution supports the definition of security patterns as security contracts and their monitoring and enforcement through run-time adaptation. We call this run-time phase Execution under Contract (EuC). 
 
-The paper is organized as follows. Section \ref{sec:preliminaries} presents some preliminaries on Security Design Patterns, principles of Design by Contract as well as runtime enforcement mechanisms. Then it introduces the motivations of this paper. 
+
+We leverage on \emph{Pamela} \cite{guerin:hal-03217126}, an annotation-based java modeling framework. At design time we use \emph{Pamela} to describe re-usable security patterns in Java as instances of a security pattern metamodel. The description focuses on security properties that the contract is assuming to guaranty. Then, we use annotations in the application Java code in order to instantiate the pattern. At run-time, the \emph{Pamela} engine intercepts the execution of the application, enabling security property monitoring and enforcement.
+
+We validate our approach by providing a prototype implementation, an initial library of re-usable security contracts, and mainly, its application in this paper to a case study consisting in the implementation/enhancement of the autenticator security pattern on the widely used Spring framework~\cite{johnson2004spring}.
+
+The rest of the paper is organized as follows. Section \ref{sec:preliminaries} presents some preliminaries on Security Design Patterns and Design by Contract. The security contracts approach is described in Section ~\ref{sec:security-contracts-approach} followed by the presentation of our case study in Section~\ref{sec:case-study}. This section includes a critical discussion of our approach and its application to the aforementioned case study. We end the paper in Section~\ref{sec:conclusion} by presenting the conclusions and future work.
+
+%\sm{We need to cite the workshop paper, but probably not here. In the approach section we will say that the method was preliminarily sketched in~\cite{silva2020contract}}
+
+%\sm{Note to self: this could also enable usage control... we can add this in the future work}
+
+%\sm{Need to mention the existance of a library of reusable patterns as a contribution}
+
+%\sm{say something about behaviour weaving}

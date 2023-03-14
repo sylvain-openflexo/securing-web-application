@@ -1,7 +1,20 @@
 \section{Related work}
 \label{sec:related-work}
 
-TODO
+To the best of our knowledge, ours is the first approach aimed at extending the design by contract paradigm to the specification and run-time monitoring of security patterns. The limit of classical contracts for the monitoring of patterns and properties which require context knowledge was already acknowledged in~\cite{hallstrom2004} and~\cite{ostroff2009beyond} which served as inspiration for our work. 
 
-\sg{Cf papier \cite{silva:hal-02958111} (OLD/8-relatedworks.tex)}
+Formal definitions of security patterns are provided by several authors \cite{cheng2019}, \cite{behrens2018}, \cite{daSilva2013}. The purpose of these formal definitions is to analyze the behavior of the patterns at design level or enabling automatic analysis operations. Conversely, our proposal to formalize security patterns with a design by contract approach aims at ensuring a secure implementation of the patterns. We can thus see these approaches as complementary. 
+
+More related to the implementation level, in~\cite{mongiello2015ac}, the authors propose AC-contract, an approach for the run-time verification of (adaptive) context-aware applications. It uses pre-defined patterns in order to derive contracts on components which are verified at run-time depending on a set of event and states. Compared to ours, apart from implementations details (e.g., their approach integrate contract components in separate XML documents), their approach is more coarse-grained (works at the component level), focuses in self adaptation and does not deal with security. In~\cite{giunta2010using} the authors propose to use annotations as a means to integrate abstract aspects representing design patterns into domain applications. They do not consider the patterns as contracts with verifiable clauses nor provide run-time adaptation. Closest to our work, in~\cite{hallstrom2004} the authors propose a AoP approach in order to monitor pattern contracts. Each pattern contract is associated with a dedicated pattern and is defined in an \emph{aspect}. This \emph{aspect} is used to monitor, at run-time, the applied pattern. Nevertheless, this approach is exclusively focused on the implementation without a will to provide abstraction related to the contract definition. Thus, our formal definition could be used to target such AOP implementations by providing the missing abstraction. Note that none of the aforementioned approaches focus on security. In that sense, and with a focus on security,  in~\cite{li2017enhancing} the authors use CERT rules and contracts in order to assist programmers in producing secure code. However they do not support patterns nor run-time monitoring.  In~\cite{dikanski2012identification}, the authors evaluate Spring Security in order to identify existing security patterns such as Authentication and Authorization. They provide a mapping between Spring security mechanisms and patterns and a guideline for the implementation. They do not provide any supporting mechanism for the implementation nor the monitoring of the patterns though.
+
+
+%\sm{A ph.d thesis including some temporal aspects in models@runtime\cite{mouline2019towards}}
+
+
+%\sg{Des trucs intéressants à voir/reprendre dans \cite{bonfanti2023component} ?}
+%\sm{Maybe also we should talk here about runtime adaptation. aspect weaving, etc.}
+
+
+
+
 

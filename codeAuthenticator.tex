@@ -1,0 +1,110 @@
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Mise en oeuvre de l'entité \textit{Authenticator} : \texttt{CustomAuthenticationProvider.java},label=listing:CustomAuthenticationProvider]
+@ModelEntity
+@ImplementationClass(CustomAuthenticationProviderImpl.class)
+@Authenticator(patternID = SessionInfo.PATTERN_ID)
+@Imports(@Import(SessionInfo.class))
+public interface CustomAuthenticationProvider extends AuthenticationProvider {
+  String USER_NAME = "userName";
+
+  // Inherited from AuthenticationProvider API
+  public Authentication authenticate(Authentication authentication) throws AuthenticationException;
+
+    ...
+
+  // This method retrieve proof of identity given supplied authentication information
+  @RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
+  UsernamePasswordAuthenticationToken request(
+    @AuthenticationInformation(
+      patternID = SessionInfo.PATTERN_ID, 
+      paramID = USER_NAME) 
+    String userName);
+
+  abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
+
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+      ...
+    }
+
+    @Override
+    public UsernamePasswordAuthenticationToken request(String userName) {
+      ...
+    }
+  }
+}
+\end{lstlisting}
+
+
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Mise en oeuvre de l'entité \textit{Subject} : \texttt{SessionInfo.java},label=listing:SessionInfo]
+@ModelEntity
+@ImplementationClass(SessionInfo.SessionInfoImpl.class)
+@AuthenticatorSubject(patternID = SessionInfo.PATTERN_ID)
+public interface SessionInfo {
+
+	String SESSION_INFO = "SESSION_INFO";
+	String PATTERN_ID = "AuthenticatorPattern";
+	String USER_NAME = "username";
+	String IP_ADRESS = "ipAdress";
+	String AUTHENTICATION_PROVIDER = "authenticationProvider";
+	String ID_PROOF = "idProof";
+
+	@Getter(USER_NAME)
+	@AuthenticationInformation(patternID = PATTERN_ID, paramID = CustomAuthenticationProvider.USER_NAME)
+	String getUserName();
+
+	@Setter(USER_NAME)
+	void setUserName(String val);
+	
+	@Setter(IP_ADRESS)
+	void setIpAdress(String val);
+	
+	@Getter(IP_ADRESS)
+	String getIpAdress();
+
+	@Getter(value = ID_PROOF, ignoreType = true)
+    UsernamePasswordAuthenticationToken getIDProof();
+
+	@Setter(ID_PROOF)
+	@ProofOfIdentitySetter(patternID = PATTERN_ID)
+	void setIdProof(UsernamePasswordAuthenticationToken value);
+
+	@Getter(AUTHENTICATION_PROVIDER)
+	@AuthenticatorGetter(patternID = PATTERN_ID)
+	CustomAuthenticationProvider getAuthenticationProvider();
+
+	@Setter(AUTHENTICATION_PROVIDER)
+	void setAuthenticationProvider(CustomAuthenticationProvider val);
+
+	@AuthenticateMethod(patternID = PATTERN_ID)
+	void authenticate();
+
+    /**
+      * Ensure call-stack is executed in authenticated context relatively 
+      * to this {@link SessionInfo} (because this method is annotated with 
+      * @RequiresAuthentication, calling it MUST be performed in
+      * authenticated context)
+      */
+	@RequiresAuthentication
+	void checkSecure();
+
+	abstract class SessionInfoImpl implements SessionInfo {
+
+        ...
+        
+		@Override
+		public void checkSecure() {
+			System.out.println("checkSecure() for " + this);
+		}
+
+		@Override
+		public String getIpAdress() {
+			return ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes())
+			           .getRequest().getRemoteAddr();
+		}
+	}
+
+}
+\end{lstlisting}
+

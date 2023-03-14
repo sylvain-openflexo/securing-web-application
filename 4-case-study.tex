@@ -1,53 +1,78 @@
-\section{Case study : securing legacy code}
+\section{Case study : applying security contract to existing code}
 \label{sec:case-study}
 
-Securing web application using \textit{Authenticator} security contract
+Following the definition and prototyping of \textit{security contracts} \cite{silva2020contract}, we experimented our approach on a significant use case in the field of web programming. This domain is particularly exposed to attacks but is also the target of particular attention in terms of software development, precisely to resist attacks.
 
-Nous nous sommes intéressés à la mise en oeuvre des patrons de sécurité ou cybercontrats définis dans la bibliothèque de \textit{Patterns} de PAMELA sur un cas d'utilisation représentatif d'une application réelle, l'idée étant de valider l'approche en pratique. 
+To demonstrate the effectiveness of \textit{security contracts}, we thought that applying them to an existing and widely used framework would and widely used, would allow to validate our approach.
 
-L'autre élément déterminant de cette expérimentation consistait à valider la pertinence d'une telle approche sur un code existant (\textit{legacy code}), l'idée étant de voir comment sécuriser en aval une application tout à fait fonctionnelle, sans avoir besoin de ré-architecturer tout le code fonctionnel.
+We selected the Open Source \textit{Spring} framework due to the used worldly for web's application backend. This intensive use is supported by Java language with its strong typed system.
+Currently securing legacy code remains a challenge for many reasons like understanding the code architecture, identifying the security threats relative to the code and reduce the attack surface, with a first step owning a robust authentication process.
 
-Nous nous sommes intéressé à une application Web, et avons choisi le framework Spring\footnote{\url{https://spring.io/}} parce qu'il est d'une part très utilisé et représentatif de l'état de l'art en terme d'ingénierie de sites web, et d'autre part parce que c'est un \textit{framework} codé en Java.
+The Open Source status of this framework provides an excellent use case to tackle our Security Contracts related to both, the reuse of legacy code and on the Authentication process to ensure an efficient first shield. 
 
-\subsection{Le framework Spring}
 
-\textit{Spring} est un framework de développement d'application Web en java extrêmement populaire.  Ce framework s'appuie sur des librairies prédéfinie comprenant des classes réutilisables. La variété des classes est à la fois un avantage pour offrir au développeur de nombreuses possibilités mais aussi un inconvénient qui implique que Spring est très étendu et long à assimiler au premier abord, ce qui peut poser de nombreux problèmes en terme de sécurité par d'adjonction inopportune de bugs ou de failles de sécurité. Il est surtout reconnu pour son injection de dépendance et pour l’inversion de contrôle. Spring comporte un module web qui supporte l’API Servlet (interface de programmation applicative pour les classes Java qui permettent de créer dynamiquement des données au sein d’un serveur HTTP) qui s’appelle Spring MVC pour Model View Controller.
+\subsection{The \textit{Spring} framework}
 
-La figure \ref{fig:ArchitectureSpring} présente d'architecture du framework.
-Le \textit{DispatcherServlet} de \textit{Spring} gère toute les requêtes reçues par l’application (1) , il va d’abord solliciter le \textit{HandlerMapping} (2) qui va faire le lien avec un bean contrôleur enregistré annoté par \texttt{@Controller}. Celui-ci va ensuite exécuter la logique d’application fournie par le \textit{HandlerAdapter} qui va résulter en un modèle. Il va aussi retourner un nom logique de vue au \textit{HandlerAdapter} (3) . Après cela, le \textit{DispatcherServlet} va solliciter le \textit{ViewResolver} (4) qui va résoudre la \textit{View} grâce au nom logique (5) . Le \textit{DispatcherServlet} envoie ensuite le processus de rendu à la vue renvoyée qui va constituer avec le modèle la réponse à la requête initialement reçue (6) .
+\textit{Spring} Spring is a framework for developing Web applications in Java used intensively.  This framework is based on predefined libraries including reusable classes. The variety of classes is both an advantage to offer the developer many possibilities of extension but also a disadvantage which implies that Spring is long to assimilate at first sight. In terms of security, these extension possibilities can be problem sources in terms of understanding and by untimely addition of bugs or vulnerabilities. 
+Spring has a web module that supports the Servlet API (which dynamically creates data within an HTTP server) called Spring MVC for Model View Controller.
 
+\begin{comment}
+    
+The figure \ref{fig:ArchitectureSpring} presents the architecture of the framework, the numbers of the next paragraph defining a generic scenario on this architecture.
+The \textit{DispatcherServlet} of \textit{Spring} manages all the requests received by the application (1), it will first solicit the handler mapping (2) which will make the link with a registered controller bean annotated by the controller. This one will then execute the application logic provided by the \textit{HandlerAdapter} from which a model will result. It will also return a logical view name to the \textit{HandlerAdapter} (3). After that, the \textit{DispatcherServlet} will call the \textit{ViewResolver} (4) which will resolve the view thanks to the logical name (5). The  \textit{DispatcherServlet} then sends the rendering process to the returned view which will constitute, with the model, the answer to the initially received request (6) .
+
+\jc{Pb des figures illisibles, a refaire dans drawio}
 \begin{figure}[!h]
     \centering
     \includegraphics[width=1.0 \columnwidth]{figures/ArchitectureSpring.png}
-    \caption{Architecture du framework \textit{Spring}}
+    \caption{Architecture of the \textit{Spring} framework}
     \label{fig:ArchitectureSpring}
 \end{figure}
+\end{comment}
 
-\textit{Spring Security} est une librairie du framework \textit{Spring} permettant la gestion de l’authentification et le contrôle d’accès. Comme le reste des projets Spring, il est facilement personnalisable. Son utilisation va permettre de faciliter l’utilisation du patron de sécurité avec PAMELA grâce à des classes relativement faciles à identifier. Nous allons pour cette expérimentation nous intéresser à l'authentification.
 
-La figure \ref{fig:ArchitectureAuthentificationSpring} présente la gestion de l'authentification au sein du framework \textit{Spring}. Lorsque l’application développée avec \textit{Spring Security} reçoit une requête, la requête passe à travers une chaine de filtre (1) . Quand la requête contient une demande d’authentification, l’\textit{AuthenticationFilter} va extraire les informations d’identification de l’utilisateur (généralement son nom d’utilisateur et son mot de passe) et créer un objet \textit{Authentication}. Si les informations reçues contiennent un nom d’utilisateur et un mot de passe, un \textit{UsernamePasswordAuthenticationToken} sera créé contenant le nom d’utilisateur et le mot de passe (2) . Ce \textit{token} sera utilisé pour invoquer la méthode \textit{authenticate()} de l’\textit{AuthenticationManager} qui est implémenté par \textit{ProviderManager} (3) . Il existe plusieurs \textit{AuthenticationProvider} déjà configurés et listés dans \textit{ProviderManager}. Celui que nous utiliserons dans
-cette expérimentation est le \textit{DAOAuthenticationProvider}. DAO correspond à "Data Access Object", c’est un modèle qui fournit une interface abstraite à un type de base de données. En mappant les appels d’application à la couche de persistance, le DAO fournit certaines opérations de données spécifiques sans exposer les détails de la base de données. Le \textit{DAOAuthenticationProvider} utilise \textit{UserDetailsService} (5) pour récupérer les données de l’utilisateur en fonction de son nom d’utilisateur (6) , (7) , (8) , (9) . Si l’authentification (10) réussit alors l’objet \textit{Authentication} complet (avec "authenticated = True", la liste des autorités et le nom d’utilisateur) est renvoyé. Sinon une exception \textit{AuthenticationException} sera levée. Enfin, \textit{AuthenticationManager} renvoie l’objet \textit{Authentication} à l’\textit{Authenticationfilter}, l’authentification a réussi et l’objet est stocké dans le \textit{SecurityContext}.
+\textit{Spring Security} is the library allowing the management of authentication and access control. Like any \textit{Spring} project, it is customizable. 
+Authentication being the first security rampart of the application, the issue here is to make sure that this \textit{Authenticator} design pattern is correctly implemented and preserves the desired security properties.
+This main motivation has guided our experiment to focus on the application of Security Contracts on the authentication process.
+
+The figure \ref{fig:ArchitectureAuthenticationSpring} details the authentication management within the \textit{Spring} framework. We explain a generic scenario in the figure via the diagram numbers. So when the application developed with \textit{Spring Security} receives a request, a component chain is activated (1) . When the request contains an authentication one, the \textit{AuthenticationFilter} will extract the user's credentials (usually username and password) and create an \textit{Authentication} object. If the received information contains a username and a password, a \textit{UsernamePasswordAuthenticationToken} will be created containing the username and the password (2) . 
+
+This token will be used to invoke the \textit{authenticate()} method of the \textit{AuthenticationManager} which is implemented by \textit{ProviderManager} (3). There are several \textit{AuthenticationProvider} already configured and listed in \textit{ProviderManager}. The one we will use in this experimentation is the \textit{DAOAuthenticationProvider}. DAO stands for "Data Access Object", which is a model that provides an abstract interface to a database type. By mapping application calls to the persistence layer, the DAO provides certain specific data operations without exposing the details of the database. The \textit{DAOAuthenticationProvider} uses \textit{UserDetailsService} (5) to retrieve user data based on the user's username (6) , (7) , (8) , (9). If the authentication (10) succeeds then the complete \textit{Authentication} object (with "authenticated = True", the list of authorities and the user name) is returned. Finally, the \textit{AuthenticationManager} returns the \textit{Authentication} object to the \textit{Authenticationfilter}, the authentication has succeeded and the object is stored in the \textit{SecurityContext}.
+And if the authentication fails,  the \textit{AuthenticationManager} raises an exception \textit{AuthenticationException} will be thrown. 
 
 \begin{figure}[!h]
     \centering
-    \includegraphics[width=1.0 \columnwidth]{figures/ArchitectureAuthentificationSpring.png}
-    \caption{Gestion de l'authentification dans le framework \textit{Spring}}
-    \label{fig:ArchitectureAuthentificationSpring}
+    \includegraphics[width=1.0 \columnwidth]{figures/AuthenticateSpringProcess.pdf}
+    \caption{Authenticate service in the \textit{Spring} framework}
+    \label{fig:ArchitectureAuthenticationSpring}
 \end{figure}
 
-\subsection{Mise en oeuvre du patron \textit{Authenticator} sur une application Spring}
+\subsection{Applying the \textit{Authenticator} Security Contract on the \textit{Spring} authentication}
 
 % PAMELA: un framework de tissage au run-time permettant de faire du monitoring de propriétés de sécurité
 
-La mise en oeuvre du patron \textit{Authenticator} dans ce contexte s'appuie sur des techniques d'annotations de code source. Ces techniques requièrent d'identifier les concepts et les points d'extension adéquats, au prix parfois de la mise en place d'héritages et de délégations.
+The implementation of the Security Contract \textit{Authenticator} in this context is based on two phases: 1) Weaving the \textit{Authenticator} pattern into the \textit{Spring} architecture, presented just below 2) Allocating the security properties, presented in the section \ref{subsection:secureapplication}, to be preserved by the application.
 
-La figure \ref{fig:authenticator_class_diagram} reprend le diagramme de classe du patron \textit{Authenticator} présenté dans la section \ref{subsec:AuthenticatorSecurityContract}. On se réfèrera également à la figure \ref{fig:AuthenticatorPattern} pour la correspondance des concepts entre les concepts métiers fournis par Spring et le patron \textit{Authenticator} utilisé.
 
-Ce patron identifie quatre entités distinctes : \textit{Authenticator}, \textit{Subject}, \textit{AuthenticationInformation} et \textit{ProofOfIdentity}, pour lesquelles il s'agit de trouver le concept métier correspondant dans le code source à annoter.
+These two steps are ensured by source code annotation techniques. These techniques are used by the application developer which must know the contract definition, and the application code reused.
+First of all, this developer requires the identification of the appropriate concepts and extension points. Sometimes for a reuse perspective inheritance and delegation are used to expand these extension points.
 
-\subsubsection{Authenticator} : Ce concept est identifié dans le patron \textit{Authenticator} avec l'annotation \texttt{@Authenticator}. Sur l'application à sécuriser, c'est l'API \textit{AuthenticationProvider} qui réalise cette fonctionnalité. Concrètement, nous allons utiliser la classe \textit{DAOAuthenticationProvider} (implantation d'une logique base de données avec accès à la couche donnée) qui prend en charge cette fonctionnalité. Nous avons ici choisi une logique d'héritage en définissant le couple API/implantation présenté dans le listing \ref{listing:CustomAuthenticationProvider}. L'identification du patron s'opère via l'identifiant \texttt{SessionInfo.PATTERN\_ID}, qui est une simple chaîne de caractères.
+Figure \ref{fig:authclasses} shows the class diagram of the \textit{Authenticator} contract presented in section \ref{subsec:AuthenticatorSecurityContract}. 
+%We also refer to figure \ref{fig:AuthenticatorPattern} for the correspondence of the concepts between the business concepts provided by \textit{Spring} and the \textit{Authenticator} contract used.
+This contract identifies four distinct entities: \textit{Authenticator}, \textit{Subject}, \textit{AuthenticationInformation} and \textit{ProofOfIdentity}, for which we need to find the corresponding business concept in the source code to be annotated. To examplify our approach, we select only the \textit{Authenticator} and the \textit{Subject} entities.
 
-\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Mise en oeuvre de l'entité \textit{Authenticator} : \texttt{CustomAuthenticationProvider.java},label=listing:CustomAuthenticationProvider]
+
+
+\subsubsection{Authenticator}: This concept is identified in the \textit{Authenticator} pattern with the \texttt{@Authenticator} annotation. On the application to secure, the Java interface \textit{AuthenticationProvider} plays the corresponding role. So this role is applied, line 3 of the listing \ref{listing:CustomAuthenticationProvider}, to the specialization \textit{CustomAuthenticationProvider} which extends \textit{AuthenticationProvider}. 
+
+From an implementation point of view, the role is implemented by the \textit{CustomAuthenticationProviderImpl} class, presented on line 17 in the listing \ref{listing:CustomAuthenticationProvider}.
+This class is extended from \textit{DAOAuthenticationProvider} class which takes care of this role in the Spring framework. 
+%To specialize this logic, we use inheritance on the Spring framework API, by defining an API/implementation pair (\textit{DaoAuthenticationProvider} / \textit{CustomAuthenticationProviderImpl}) presented on line 17 in the listing \ref{listing:CustomAuthenticationProvider}. 
+
+The link between the role and the pattern definition is done via the identifier \texttt{SessionInfo.PATTERN_ID}, which is currently a character string, see line 3.
+
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Specialization of \textit{Authenticator} entity through \texttt{CustomAuthenticationProvider} definition,label=listing:CustomAuthenticationProvider]
 @ModelEntity
 @ImplementationClass(CustomAuthenticationProviderImpl.class)
 @Authenticator(patternID = SessionInfo.PATTERN_ID)
@@ -57,17 +82,9 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 
   // Inherited from AuthenticationProvider API
   public Authentication authenticate(Authentication authentication) throws AuthenticationException;
-
+    
     ...
-
-  // This method retrieve proof of identity given supplied authentication information
-  @RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
-  UsernamePasswordAuthenticationToken request(
-    @AuthenticationInformation(
-      patternID = SessionInfo.PATTERN_ID, 
-      paramID = USER_NAME) 
-    String userName);
-
+    
   abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
 
     @Override
@@ -83,9 +100,14 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 }
 \end{lstlisting}
 
-\subsubsection{Subject} : Ce concept est identifié dans le patron \textit{Authenticator} avec l'annotation \texttt{@AuthenticatorSubject}. Sur l'application à sécuriser, ce concept correspond peu ou prou à la notion de session, mais n'est pas directement réifé. Nous choisissons de le faire en déclarant le couple API/implantation \texttt{SessionInfo}, présenté dans le listing suivant (nous présenterons plus loin la gestion du cycle de vie de cette donnée):
+\subsubsection{Subject}: 
+This concept is identified in the \textit{Authenticator} pattern with the \texttt{@AuthenticatorSubject} annotation, line 3 of the listing \ref{listing:SessionInfo}. On the application to secure, this concept is not directly reified but corresponds to the notion of session, from our point of view. Thus we reify the concept \texttt{SessionInfo}, which is presented in the listing \ref{listing:SessionInfo}. 
+The \textit{SessionInfo} concept allows the management of the \texttt{USER_NAME}, \texttt{IP\_ADDRESS} and \texttt{ID\_PROOF} (proof of identity) from line 5 to 10, as well as the access to the authenticator via the accessors \texttt{getAuthenticationProvider()} and \texttt{setAuthenticationProvider()}
 
-\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Mise en oeuvre de l'entité \textit{Subject} : \texttt{SessionInfo.java},label=listing:SessionInfo]
+The method \texttt{authenticate()} (line 18 of the listing \ref{listing:SessionInfo}) is identified via the annotation \texttt{@AuthenticateMethod} to the method \texttt{request} of the pattern \textit{Authenticator} as presented in the figure \ref{fig:AuthenticatorPattern}.
+The \texttt{checkSecure()} method is annotated as \texttt{@RequiresAuthentication}, line 20-21,  to trigger the Authentication process based on the method with the annotation \texttt{@AuthenticateMethod} if the process is executed for the first time. 
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption= \texttt{SessionInfo} to implement the \textit{Subject} entity,label=listing:SessionInfo]
 @ModelEntity
 @ImplementationClass(SessionInfo.SessionInfoImpl.class)
 @AuthenticatorSubject(patternID = SessionInfo.PATTERN_ID)
@@ -98,26 +120,8 @@ public interface SessionInfo {
 	String AUTHENTICATION_PROVIDER = "authenticationProvider";
 	String ID_PROOF = "idProof";
 
-	@Getter(USER_NAME)
-	@AuthenticationInformation(patternID = PATTERN_ID, paramID = CustomAuthenticationProvider.USER_NAME)
-	String getUserName();
-
-	@Setter(USER_NAME)
-	void setUserName(String val);
-	
-	@Setter(IP_ADRESS)
-	void setIpAdress(String val);
-	
-	@Getter(IP_ADRESS)
-	String getIpAdress();
-
-	@Getter(value = ID_PROOF, ignoreType = true)
-    UsernamePasswordAuthenticationToken getIDProof();
-
-	@Setter(ID_PROOF)
-	@ProofOfIdentitySetter(patternID = PATTERN_ID)
-	void setIdProof(UsernamePasswordAuthenticationToken value);
-
+    ....
+    
 	@Getter(AUTHENTICATION_PROVIDER)
 	@AuthenticatorGetter(patternID = PATTERN_ID)
 	CustomAuthenticationProvider getAuthenticationProvider();
@@ -125,15 +129,11 @@ public interface SessionInfo {
 	@Setter(AUTHENTICATION_PROVIDER)
 	void setAuthenticationProvider(CustomAuthenticationProvider val);
 
+    ....
+    
 	@AuthenticateMethod(patternID = PATTERN_ID)
 	void authenticate();
 
-    /**
-      * Ensure call-stack is executed in authenticated context relatively 
-      * to this {@link SessionInfo} (because this method is annotated with 
-      * @RequiresAuthentication, calling it MUST be performed in
-      * authenticated context)
-      */
 	@RequiresAuthentication
 	void checkSecure();
 
@@ -156,17 +156,16 @@ public interface SessionInfo {
 }
 \end{lstlisting}
 
-La notion de session (\textit{SessionInfo}) (listing \ref{listing:SessionInfo}) permet la gestion du \texttt{USER\_NAME}, \texttt{IP\_ADDRESS} et \texttt{ID\_PROOF} (preuve d'identité), ainsi que l'accès à l'authenticator via les accesseurs \texttt{getAuthenticationProvider()} et \texttt{setAuthenticationProvider(CustomAuthenticationProvider)}
+\begin{comment}
 
-La méthode \texttt{authenticate()} (ligne 41 du listing \ref{listing:SessionInfo}) est identifiée via l'annotation \texttt{@AuthenticateMethod} qui indique que cette méthode correspond à la requête d'identification du patron \textit{Authenticator} comme présenté dans la figure \ref{fig:AuthenticatorPattern}.
+\subsubsection{AuthenticationInformation}: The information at the base of the authentication in the \textit{Spring} application to be secured is the user name defined in the \textit{SessionInfo} class (listing \ref{listing:SessionInfo}). A character string implements the user name and its accessed by \texttt{getUserName()} and \texttt{setUserName(String)} defined respectively lines 15 and 18 of the listing \ref{listing:SessionInfo}. The annotation \texttt{@AuthenticationInformation} defined on line 14 specifies the use of this data for authentication, together with the annotation \texttt{@AuthenticationInformation(paramId=...)} defined on line 14 of the listing \ref{listing:CustomAuthenticationProvider}.
 
-\subsubsection{AuthenticationInformation} : L'information à la base de l'authentification dans l'application Spring à sécuriser est le nom utilisateur défini dans la classe \textit{SessionInfo} (listing \ref{listing:SessionInfo}). Il s'agit d'une simple chaîne de caractères définie à partir des accesseurs \texttt{getUserName()} et \texttt{setUserName(String)} définis respectivement lignes 15 et 18 du listing  \ref{listing:SessionInfo}. L'annotation \texttt{@AuthenticationInformation} définie ligne 14 précise l'utilisation de cette donnée pour l'authentification, conjointement avec l'annotation \texttt{@AuthenticationInformation(paramId=...)} définie ligne 14 du listing \ref{listing:CustomAuthenticationProvider}.
+\subsubsection{ProofOfIdentity}: The fourth and last entity to be identified is the notion of proof of identity which is found in the \texttt{UsernamePasswordAuthenticationToken} class in the \textit{Spring} application. We have chosen to expose the accessors getIDProof() and setIDProof(UsernamePasswordAuthenticationToken) in the SessionInfo interface (respectively lines 27 and 31 of the listing \ref{listing:SessionInfo}.
 
-\subsubsection{ProofOfIdentity} : La quatrième et dernière entité à identifier est la notion de preuve d'identité que l'on retrouve dans la classe \texttt{UsernamePasswordAuthenticationToken} dans l'application Spring à sécuriser. Nous avons choisi d'exposer le couple d'accesseurs getIDProof() et setIDProof(UsernamePasswordAuthenticationToken) dans l'interface SessionInfo (respectivement lignes 27 et 31 du listing \ref{listing:SessionInfo}.
 
-\subsubsection{Cycle de vie de la notion d'\texttt{AuthenticationProvider}} :
+\subsubsection{Life cycle of the \texttt{AuthenticationProvider} concept}:
+We have used the notion of \textit{Service} offered by the \textit{Spring} framework to implement a service dedicated to authentication. The listing \ref{listing:AuthManagerService} presents this implementation. This service is responsible to instantiate a single instance (singleton design pattern) of \texttt{CustomAuthenticationProvider} for the application. As well, this service creates a session with an instance of (\texttt{SessionInfo}), via the use of a factory based on the construction of the \texttt{PamelaMetaModel} inferred from the \texttt{CustomAuthenticationProvider} class (lines 11 and 12 of the listing \ref{listing:AuthManagerService}). 
 
-Nous avons utilisé la notion de \textit{Service} offerte par le framework Spring pour implanter un service dédié à l'authentification. Le listing \ref{listing:AuthManagerService} présente cette implantation. C'est ce service qui sera responsable de l'instantiation d'une unique instance (singleton) de \texttt{CustomAuthenticationProvider} pour l'application et de la création de session (\texttt{SessionInfo}), via l'utilisation d'une factory basée sur la construction du \texttt{PamelaMetaModel} inféré à partir de la classe \texttt{CustomAuthenticationProvider} (lignes 11 et 12 du listing \ref{listing:AuthManagerService}). Ce même service gère également avec la même factory l'instantiation d'une instance de \texttt{SessionInfo}.
 
 \begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Mise en oeuvre du service d'authentification : \texttt{AuthManagerService.java},label=listing:AuthManagerService]
 @Service
@@ -200,9 +199,9 @@ public class AuthManagerService {
 }
 \end{lstlisting}
 
-\subsubsection{Cycle de vie de la notion de session (SessionInfo)} : 
+\subsubsection{Lifecycle of the session concept by the \texttt{SessionInfo}}: 
+We used the \textit{Spring} component \texttt{HttpSessionEventPublisher} as a support for extension points allowing to manage the construction and destruction of instances of \texttt{SessionInfo}. We propose in the listing \ref{listing:CustomHttpSessionEventPublisher} a class \texttt{CustomHttpSessionEventPublisher} which inherits from \texttt{HttpSessionEventPublisher} and which implements these functionalities of management of instances of \texttt{SessionInfo} (lines 12 and 21 respectively for the creation and the destruction of instances).
 
-Nous avons utilisé le composant Spring \texttt{HttpSessionEventPublisher} comme support de points d'extension permettant de gérer la construction et la destruction d'instances de \texttt{SessionInfo}. Nous proposons dans le listing \ref{listing:CustomHttpSessionEventPublisher} une classe \texttt{CustomHttpSessionEventPublisher} qui hérite de \texttt{HttpSessionEventPublisher} et qui implante ces fonctionnalités de gestion d'instances de \texttt{SessionInfo} (lignes 12 et 21 respectivement pour la création et la destruction d'instances).
 
 \begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Cycle de vie des \texttt{SessionInfo} : \texttt{CustomHttpSessionEventPublisher.java},label=listing:CustomHttpSessionEventPublisher]
 @Component
@@ -229,12 +228,14 @@ extends HttpSessionEventPublisher {
 	}
 }
 \end{lstlisting}
+\end{comment}
 
-\subsubsection{Gestion de l'authentification} : 
 
-La gestion de l'authentification proprement dite est rendue délicate du fait de deux paradigmes concurrents pour l'authentification: celui fourni par le framework Spring et celui implanté dans le patron \textit{Authenticator}. L'alignement des deux mécanismes s'opère dans l'implantation de \texttt{CustomAuthenticationProviderImpl} (listing \ref{listing:CustomAuthenticationProviderImpl}). C'est le framework Spring qui reçoit les requêtes d'authentification via l'appel de la méthode \texttt{authenticate(Authentication)} de \texttt{AuthenticationProvider}. Nous avons surchargé cette méthode avec la gestion de la \texttt{SessionInfo} courante, mais surtout en remplissant une table de correspondance entre le nom utilisateur servant d'information d'authentification et la preuve d'identité retournée par le \texttt{AuthenticationProvider} (une instance de \texttt{UsernamePasswordAuthenticationToken}). L'implantation de la méthode \texttt{request(String)} est alors triviale en ce sens qu'il suffit de retourner cette même valeur.
+\subsubsection{Authentication management}: 
+The management of authentication itself is intricate because of two competing levels: the authentication provided by the \textit{Spring} framework and the one implemented in our \textit{Authenticator} pattern. The alignment of the two mechanisms takes place in the implementation of \texttt{CustomAuthenticationProviderImpl} (listing \ref{listing:CustomAuthenticationProviderImpl}). The \textit{Spring} framework receives the authentication requests via the call of the method \texttt{authenticate(Authentication)} of \texttt{AuthenticationProvider}. We overwrite this method, line 13,  with the management of the current session information (from line 16 to 23), and the  \texttt{authenticate()} and  \texttt{checkSecure()} of the  \texttt{SessionInfo} entity, line 24 to 27, are called to complete the process.
+%but especially by filling a table of correspondence between the username used as authentication information and the proof of identity returned by the \texttt{AuthenticationProvider} (an instance of \texttt{UsernamePasswordAuthenticationToken}). The implementation of the \texttt{request(String)} method is limited to returning this same value.
 
-\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Gestion de l'authentification : détail de \texttt{CustomAuthenticationProvider.java},label=listing:CustomAuthenticationProviderImpl]
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Authentication management with \texttt{CustomAuthenticationProvider} definition,label=listing:CustomAuthenticationProviderImpl]
 abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
 
     private Map<String, UsernamePasswordAuthenticationToken> tokens 
@@ -278,76 +279,28 @@ abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvide
 }
 \end{lstlisting}
 
-\subsection{Expérimentation de l'application sécurisée}
 
-La mise en oeuvre du patron \textit{Authenticator} sur l'application sécurisée est relativement transparente pour l'utilisateur, d'un point de vue fonctionnel. Cependant le mécanisme de tissage au run-time gère maintenant explicitement des instances du patron  \textit{Authenticator} (\textit{AuthenticatorPatternInstance}), avec leur propre cycle de vie qui évolue au fur et à mesure des créations et suppressions de sessions dans l'application web. La classe \textit{SessionInfo} est dorénavant dotée d'un mode authentifié, dans la mesure où les méthodes annotées avec \textit{@RequiresAuthentication} (ex: méthode \texttt{checkSecure()}, ligne 50 du listing \ref{listing:SessionInfo}) ne peuvent s'exécuter que si l'instance courante est bien déclarée comme sujet d'une instance du patron \textit{Authenticator} pour laquelle l'authentification a été satisfaite. Ceci permet de protéger tout appel de code non autorisé et malveillant dans le contexte d'une vulnérabilité qui donnerait accès à l'exécution de ce code.
+\subsection{Pattern \textit{Authenticator} specialisation to extend the behavior with a temporal logic property}
 
-Le patron \textit{Authenticator} définit intrinsèquement 6 propriétés (4 propriétés implicites et deux propriétés fonctionnelle), qui ont été décrites dans la section \ref{subsubsec:AuthenticatorCyberContract}. La mise en oeuvre du patron garantit donc sur l'application sécurisée la vérification au run-time (monitoring) de l'ensemble de ces six propriétés, et ce dans le cadre de tous les appels aux méthodes des instances des classes concernées par le patron (ici \textit{SessionInfo} et \textit{CustomAuthenticationProvider}). 
 
-\begin{enumerate}
-    \item \textbf{Unicité du couple sujet/informations d'authentification}
-    \begin{equation*}
-        P1: \forall a, b \in I_{Subject}, a \ne b \implies a.authInfo \ne b.authInfo
-    \end{equation*}
-    Sur l'application déployée, cette première propriété se traduit par l'impossible pour un même nom d'utilisateur d'être utilisé dans deux sessions différentes: si un utilisateur est loggué, il lui faut d'abord se délogguer avant de pouvoir ouvrir une autre session. L'expérimentation peut se faire sur deux navigateurs différents: l'ouverture d'une deuxième session déclenche une exception \texttt{ModelExecutionException} (\textit{Subject Invariant Violation: Authentication information are not unique}). 
-    \\
-    \item \textbf{Non usurpation des informations d'authentification}
-    \begin{equation*}
-        P2: \forall a \in I_{Subject}, a.authInfo = a.authInfo_{ini}
-    \end{equation*}
-    Cette propriété garantit la non-usurpation des informations d'authentification. Concrètement, la propriété \texttt{userName} de \texttt{SessionInfo} ne pourra être modifiée durant toute la durée de vie de l'instance de \texttt{SessionInfo}, sans déclencher une exception \texttt{ModelExecutionException} (\textit{Subject Invariant Violation: Authentication Information has changed since initialization}). 
-    \\
-    \item \textbf{Intégrité de l'autorité d'authentification}
-    \begin{equation*}
-        P3: \forall a \in I_{Subject}, a.authenticator = a.authenticator_{ini}
-    \end{equation*}
-    Si un attaquant réussi à forger son \textit{Authenticator} il devient maître du système d'authentification. Il est donc essentiel que l'\textit{Authenticator} ne puisse pas être modifié, ce que garantit cette propriété.
-    \\
-    \item \textbf{Vérification continue d'une preuve d'identité valide ou indéfinie}
-    \begin{equation*}
-      \begin{split}
-        &P4: \forall a \in I_{Subject}, (a.idProof = \emptyset) \lor \\&(a.idProof = a.authenticator.request(a.authInfo))
-      \end{split}
-    \end{equation*}
-    A tout moment, la preuve d’identité de chaque sujet doit être soit valide, soit non définie. 
-    \\
-    \item \textbf{Vérification continue de la preuve d'identité}
-    \begin{equation*}
-        P5: self.idProof = self.authenticator.request(self.authInfo)
-    \end{equation*}
-    Après l'authentification, la preuve d'identité doit toujours correspondre à la valeur renvoyée par la méthode de requête avec les bons paramètres. La vérification conjointe des propriétés P4 et P5 garantit pendant toute la durée de la session la validité de la preuve d'identité et prévient une éventuelle attaque par \textit{"pivoting"}.
-    \\
-    \item \textbf{Post-condition de la méthode \textit{request(authInfo)}}
-    \begin{equation*}
-        P6: self.check(authInfo) \lor returnValue = \emptyset
-    \end{equation*}
-    La preuve d'identité renvoyée par la méthode \textit{request(authInfo)} de la classe \textit{Authenticator} doit être valide si et seulement si le sujet qui la demande est bien celui qu'il prétend être. La vérification de cette propriété garantit cette assertion. 
- \end{enumerate}
+% discours sur ok on a définit le contrat et maintenant on étend avec une nouvelle prop et on customize la classe du framework.
 
-\subsection{Configuration du monitoring}
-\label{subsec:conf-monitoring}
 
-\sg{Proposition : mettre ca plutot dans la discussion plus loin}
 
-A noter que la portée du monitoring est configurable via l'annotation \texttt{@MonitoredEntity} qui définit cinq stratégies possibles :
-\begin{itemize}
-    \item Vérification à l'entrée et à la sortie (ou à la sortie seulement) de toutes les méthodes, sauf les méthodes internes
-    \item Vérification à l'entrée et à la sortie (ou à la sortie seulement) de toutes les méthodes sauf celles déclarées explicitement comme non-monitorées
-    \item Vérification à l'entrée et à la sortie (ou à la sortie seulement) de toutes les méthodes coucourant à l'exécution du patron et des méthodes déclarées explicitement comme monitorées
-    \item Vérification à l'entrée et à la sortie (ou à la sortie seulement) de toutes les méthodes déclarées explicitement comme monitorées
-    \item Pas de vérification (pas de monitoring)
-\end{itemize}
-Il est également possible d'activer ou de désactiver le monitoring , et d'augmenter ou de diminuer le niveau de monitoring de façon programmatique.
 
-\subsection{Spécialisation du patron \textit{Authenticator} et ajout d'une propriété de sécurité exprimée en logique temporelle}
+One of the interests of our approach lies in the ability of the framework to provide extension points. In our case, the \texttt{CustomAuthenticationProvider} class specializes our implementation of the \textit{Authenticator} pattern.
+            
 
-La réification de la notion d'instance de patron \textit{Authenticator} (au travers ici d'une instance de la classe \texttt{AuthenticatorPatternInstance}, liée aux instances de sujet (classe \texttt{SessionInfo}) et d'authenticator (classe \texttt{CustomAuthenticationProvider}), et dont l'exécution est tissée au run-time) présente l'avantage de la gestion d'un état, et donc de l'exécution de code métier lié à l'assemblage de ces classes.
+ The second feature of our framework that we exploit, is the reification of the notion of instance of the \textit{Authenticator} pattern through the instance of the \texttt{AuthenticatorPatternInstance} class, see figure \ref{fig:AuthenticatorPattern}. 
+This class encapsulates the instances of the subject (class \texttt{SessionInfo}) and authenticator (class \texttt{CustomAuthenticationProvider}). 
+%L'exécution de ces classes est tissée au run-time. 
+%The execution of these classes is woven into the run-time. 
+As this class gives access to the instances of the classes of the pattern, an introspection capacity of the current state of the pattern is provided during all its life cycle. 
+% et donc de l'exécution de code métier lié à l'assemblage de ces classes.
 
-Un deuxième intérêt de cette approche réside dans la capacité du framework à étendre l'implantation standard du patron \textit{Authenticator}.
+We have taken advantage of these two aspects to specialize the \textit{Authenticator} pattern by extending the behavior with a new temporized temporal property. This property takes into account a time quantity applied on an execution path of the pattern. Classically this property expresses the fact that there cannot be more than three authentication failures in a given period of time. If three failures occur in this time, the application will have to switch to another mode, classically refusing any authentication attempt for a certain time for example.
 
-Nous avons mis à profit ces deux aspects pour spécialiser le patron \textit{Authenticator} et implanter une nouvelle propriété à la fois liée à la logique temporelle et également temporisée. Cette propriété exprime le fait qu'il ne peut pas y avoir plus de trois échecs d'authentification dans un labs de temps déterminé. Si trois échecs arrivent dans ce temps, l'application devra passer dans un autre mode (refusant toute tentative d'authentification pendant un certain temps par exemple).
-
-Soit $auth\_fail_i$ un évènement "échec d'authentification" dans la trace d'exécution courante \textit{execution\_trace} :
+Let $auth\_fail_i$ be an "authentication failure" event in the current execution trace:
 
     \begin{equation*}
        \begin{split}
@@ -356,10 +309,20 @@ Soit $auth\_fail_i$ un évènement "échec d'authentification" dans la trace d'e
       \end{split}
     \end{equation*}
 
-La spécialisation du patron \textit{Authenticator} requiert la définition des trois classes présentées dans les listings \ref{listing:CustomAuthenticatorPatternFactory}, \ref{listing:CustomAuthenticatorPatternDefinition} et \ref{listing:CustomAuthenticatorPatternInstance}. La classe \texttt{CustomAuthenticatorPatternInstance} implante concrètement la définition de la propriété \textit{P7} tandis que le listing \ref{listing:TemporalPropertyDefinition} complète la définition de l'\textit{authenticator} \texttt{CustomAuthenticationProvider} en faisant référence à cette propriété comme précondition de la méthode \texttt{authenticate(Authentication)} (ligne 6). A noter également ligne 9 l'utilisation de l'annotation \texttt{@OnException} qui permet de gérer automatiquement la génération d'évènements correspondant à l'échec de connexion, dont la trace est accessible à l'instance courante.
+
+The class \texttt{CustomAuthenticatorPatternInstance}, listing  \ref{listing:CustomAuthenticatorPatternInstance}, implements the definition of the property \textit{P7} through the method \texttt{checkRecentAuthFailCountLessThan3} from lines 7 to 15.
+This property is based on the evaluation of the \texttt{events} variable, defined line 3, which is defined as an instance variable of this class.  This variable \texttt{events} embodies the current state of the class's instances and takes part of the global state of the pattern. 
+%This pattern state consists of the internal state of each class instance of the pattern. 
+In our example, this variable is updated, line 17, to take into account each authentication failure and so assessed for the property evaluation.    
+
+After the definition of the contract property, the listing \ref{listing:TemporalPropertyDefinition} presents the definition of the \textit{Authenticator} referring to this property as a precondition of the method \texttt{authenticate()} (line 9). Also we can see between the line 4 and 8, the use of the annotation \texttt{@OnException} which allows to automatically generate events corresponding to the failure of connection. This events is stored in the pattern state via the \texttt{events} variable as we described before.
+
+%first the three listing classes \ref{listing:CustomAuthenticatorPatternFactory}, \ref{listing:CustomAuthenticatorPatternDefinition} and \ref{listing:CustomAuthenticatorPatternInstance}. 
 
 
 
+
+\begin{comment}
 \begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Spécialisation de la classe \texttt{AuthenticatorPatternFactory.java},label=listing:CustomAuthenticatorPatternFactory]
 public class CustomAuthenticatorPatternFactory extends AuthenticatorPatternFactory {
 
@@ -379,7 +342,10 @@ public class CustomAuthenticatorPatternFactory extends AuthenticatorPatternFacto
 }
 \end{lstlisting}
 
-\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Spécialisation de la classe \texttt{AuthenticatorPatternDefinition.java},label=listing:CustomAuthenticatorPatternDefinition]
+
+
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=\texttt{CustomAuthenticatorPatternDefinition} specializes \texttt{AuthenticatorPatternDefinition},label=listing:CustomAuthenticatorPatternDefinition]
 public class CustomAuthenticatorPatternDefinition extends AuthenticatorPatternDefinition {
 
 	public CustomAuthenticatorPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
@@ -397,37 +363,77 @@ public class CustomAuthenticatorPatternDefinition extends AuthenticatorPatternDe
 }
 \end{lstlisting}
 
-\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Spécialisation de la classe \texttt{AuthenticatorPatternInstance.java},label=listing:CustomAuthenticatorPatternInstance]
+\end{comment}
+
+
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=\texttt{AuthenticatorPatternInstance} specialization to add the P7 property implementation,label=listing:CustomAuthenticatorPatternInstance]
 public class CustomAuthenticatorPatternInstance extends AuthenticatorPatternInstance<CustomAuthenticationProvider, SessionInfo, String, UsernamePasswordAuthenticationToken> {
+
+	public static long TIME_LIMIT = 180000; // 180s = 3 min
+
+	private List<PatternInstanceEvent> events = new ArrayList<>();
 
 	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, PamelaModel model, SessionInfo subject) {
 		super(patternDefinition, model, subject);
 	}
 
-	public void checkAuthFailCount() {
-		// Perform check that last 3 AuthFailEvent in current execution trace were not raised within allowed time limit
-        ...
+	// Perform check that last 3 AuthFailEvent in current execution trace were not raised within allowed time limit
+	public boolean checkRecentAuthFailCountLessThan3() {
+		long currentTime = System.currentTimeMillis();
+		if (events.size() >= 3 && (currentTime - events.get(events.size() - 3).getDate()) < TIME_LIMIT) {
+			// 3 attempts or more in TIME_LIMIT interval
+			return false;
+		}
+		return true;
 	}
+
+	public void generateAuthFailEvent() {
+			events.add(new AuthFailedEvent());
+    }
+
+	@Override
+	public void authenticationSuceeded() {
+		super.authenticationSuceeded();
+	}
+ }
 \end{lstlisting}
 
-\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Définition de la propriété temporelle,label=listing:TemporalPropertyDefinition]
+
+The extension of the previous contract being realized, we can now use it and add an \texttt{@ensures} annotation with a reference to the implementation of the new property, line 9 of the listing \ref{listing:TemporalPropertyDefinition}.
+This annotation is defined related to the \texttt{authenticate()} method.
+So for now, any call of this method respects the security contract defined by the instance \texttt{CustomAuthenticatorPatternInstance} corresponding to the current execution. This contract automatically handles the \texttt{AuthFailedEvent} events, and checks that a user cannot fail to authenticate more than 3 times in a given time. 
+
+
+
+
+\begin{lstlisting}[language=Java,basicstyle=\ttfamily\footnotesize, caption=Contract definition with applying with the P7 property,label=listing:TemporalPropertyDefinition]
 public interface CustomAuthenticationProvider extends AuthenticationProvider {
 
     ...
     
 	@Override
-	@Requires(
+	@OnException(
 			patternID = SessionInfo.PATTERN_ID,
-			property = "patternInstance.checkAuthFailCount()")
-	@OnException(exceptionClass = AuthenticationException.class, generateEvent = AuthFailEvent.class)
+			onException = AuthenticationException.class,
+			perform = "patternInstance.generateAuthFailEvent()",
+			strategy = OnExceptionStategy.HandleAndRethrowException)
+	@Ensures(patternID = SessionInfo.PATTERN_ID, property = "patternInstance.checkRecentAuthFailCountLessThan3()")
     public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
     ...
 }
 \end{lstlisting}
 
-Tout appel de la méthode \texttt{authenticate(Authentication)} est dorénavant surveillé par l'instance \texttt{CustomAuthenticatorPatternInstance} correspondante, qui gère automatiquement les évènements \texttt{AuthFailedEvent}, et qui vérifie qu'un utilisateur ne peut pas échouer à s'authentifier plus de 3 fois dans un temps donné. 
 
-Cette expérimentation montre comment il est possible d'étendre le patron \textit{Authenticator} pour faire en sorte de vérifier à la fois les propriétés P1-P6 définies pour ce patron, ainsi que d'autres propriétés plus spécialisées (P7).
+Our use case shows how to extend the \textit{Authentication} process, based on an existing code, to ensure a security contract that verifies the properties P1-P7 defined at design time. Note that the full code of this case study can be found at the web site of the project~\footnote{https://github.com/openflexo-team/pamela/tree/2.0/pamela-spring-security-uc}.
 
+With this experiment, we sought to demonstrate:
+\begin{itemize}
+    \item the definition of a security contract allows us to highlight the properties we seek to preserve, independently of the implementation.
+    \item this definition allows to increase the level of abstraction of the classical definition of security patterns, even on a conceptual class diagram.
+    \item these contracts allow the link between the Security by Design and Execution under Contract phases, which remains a problem not enough covered at present, without code generation.
+    \item The use case treated also shows that the weaving of a security contract by specialization of an existing pattern, is possible and easily usable based on code annotation.
+    \item the specialization of the security contract can also be progressive by extending the number of properties and specializing the code defining the contract. 
+\end{itemize}
 

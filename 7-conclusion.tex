@@ -1,5 +1,12 @@
-\section{Conclusion}
+\section{Conclusion\& Future Work}
 \label{sec:conclusion}
 
-TODO
+In this paper we have presented \emph{Security Contracts}, a novel extension of the design by contract paradigm aimed at supporting security patterns. Our approach provides a mechanism for the specification of re-usable and extensible abstract patterns, their deployment on host applications and their monitoring at run-time (in what we call, Execution under Contract). A prototype implementation for the Java ecosystem and its application to a case study involving the enhancement of the authentication mechanism provided by the Spring Security framework are presented as well. Concretely, we have shown how we can define the Authenticator pattern as a \emph{Security Contract} in an abstract way, deploy it by the means of annotations in both new and existing applications and monitor and enforce its properties (including temporal ones) at run-time.
 
+As future work we envision the exploration of the following research lines:
+
+\begin{itemize}
+\item Pattern composition. We intend to investigate an extension of our framework in order to give support to the composition of patterns. This will enable the possibility of creating complex patterns as a composition of simpler, easier to verify ones.
+\item Annotation enhancement. We aim to research the feasibility of the integration of a given (temporal) logic directly in the annotations used to deploy the pattern, so that the user can add/modify its properties.
+\item Pure run-time weaving. We plan to extend our prototype so that it uses a weaving model to identify pointcuts and joins, so that the pattern's behaviour weaving can be done directly on the bytecode and at run-time without accessing the source code of the application
+\end{itemize}
